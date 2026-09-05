@@ -1,6 +1,6 @@
 lancedb
 langchain==1.2.17
-langgraph==1.1.9
+langgraph==1.1.10
 langgraph-checkpoint-sqlite==3.0.2
 langchain-community
 langchain-tavily
