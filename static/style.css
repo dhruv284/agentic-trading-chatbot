@@ -491,3 +491,290 @@
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    
+/* ─────────────────────────────────────────
+   Responsive Design
+   ───────────────────────────────────────── */
+
+/* Tablets */
+@media (max-width: 900px) {
+  .sidebar {
+    width: 230px;
+  }
+
+  .messages {
+    padding: 20px;
+  }
+
+  .input-bar {
+    padding: 14px 20px 18px;
+  }
+
+  .message {
+    max-width: 90%;
+  }
+}
+
+
+/* Mobile */
+@media (max-width: 700px) {
+
+  /* Top bar */
+  .topbar {
+    height: 52px;
+    padding: 0 14px;
+  }
+
+  .logo {
+    font-size: 16px;
+    gap: 8px;
+  }
+
+  .logo-icon {
+    width: 26px;
+    height: 26px;
+    font-size: 13px;
+  }
+
+  .status-pill {
+    font-size: 9px;
+    padding: 4px 8px;
+  }
+
+
+  /* Stack layout vertically */
+  .layout {
+    flex-direction: column;
+  }
+
+  /* Sidebar becomes a compact top section */
+  .sidebar {
+    width: 100%;
+    height: auto;
+    flex-shrink: 0;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    display: block;
+    max-height: 190px;
+    overflow-y: auto;
+  }
+
+  .sidebar-section {
+    padding: 12px 14px;
+  }
+
+  .sidebar-label {
+    font-size: 9px;
+    margin-bottom: 9px;
+  }
+
+
+  /* Upload area */
+  .upload-zone {
+    padding: 12px;
+  }
+
+  .upload-icon {
+    font-size: 22px;
+    margin-bottom: 4px;
+  }
+
+  .upload-text {
+    font-size: 10px;
+  }
+
+  .upload-text strong {
+    font-size: 11px;
+  }
+
+  .upload-btn {
+    font-size: 10px;
+    padding: 7px;
+  }
+
+
+  /* Tools become horizontal */
+  .tool-chips {
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .tool-chip {
+    min-width: max-content;
+    padding: 7px 9px;
+    font-size: 10px;
+  }
+
+  .tool-chip-tag {
+    font-size: 8px;
+  }
+
+
+  /* Chat */
+  .chat-area {
+    min-height: 0;
+    flex: 1;
+  }
+
+  .messages {
+    padding: 16px 12px;
+    gap: 14px;
+  }
+
+
+  /* Welcome */
+  .welcome {
+    padding: 24px 12px;
+    gap: 12px;
+  }
+
+  .welcome-title {
+    font-size: 26px;
+  }
+
+  .welcome-sub {
+    font-size: 11px;
+    max-width: 340px;
+    line-height: 1.6;
+  }
+
+
+  /* Suggestion cards */
+  .suggestion-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    max-width: 100%;
+  }
+
+  .suggestion-card {
+    padding: 11px;
+    border-radius: 8px;
+  }
+
+  .suggestion-card .s-icon {
+    font-size: 16px;
+    margin-bottom: 4px;
+  }
+
+  .suggestion-card .s-title {
+    font-size: 10px;
+  }
+
+  .suggestion-card .s-desc {
+    font-size: 9px;
+    line-height: 1.4;
+  }
+
+
+  /* Messages */
+  .message {
+    max-width: 94%;
+    gap: 8px;
+  }
+
+  .avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+    border-radius: 7px;
+  }
+
+  .bubble {
+    padding: 10px 12px;
+    font-size: 11px;
+    line-height: 1.6;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+
+  /* Input */
+  .input-bar {
+    padding: 10px 10px 12px;
+  }
+
+  .input-wrap {
+    padding: 8px 8px 8px 12px;
+    gap: 7px;
+    border-radius: 10px;
+  }
+
+  textarea {
+    font-size: 12px;
+    min-width: 0;
+  }
+
+  .send-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+  }
+
+  .send-btn svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .input-hint {
+    font-size: 8px;
+    margin-top: 6px;
+  }
+
+
+  /* Toast */
+  .toast {
+    left: 12px;
+    right: 12px;
+    bottom: 14px;
+    text-align: center;
+    font-size: 10px;
+  }
+}
+
+
+/* Very small phones */
+@media (max-width: 400px) {
+
+  .topbar {
+    padding: 0 10px;
+  }
+
+  .status-pill {
+    font-size: 8px;
+  }
+
+  .sidebar {
+    max-height: 165px;
+  }
+
+  .suggestion-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .suggestion-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+  }
+
+  .suggestion-card .s-icon {
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+
+  .suggestion-card .s-title {
+    margin-bottom: 2px;
+  }
+
+  .message {
+    max-width: 97%;
+  }
+
+  .bubble {
+    font-size: 10px;
+    padding: 9px 10px;
+  }
+}
