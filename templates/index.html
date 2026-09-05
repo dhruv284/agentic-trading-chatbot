@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TradeMind AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-icon">📈</div>
+    Trade<span>Mind</span>
+  </div>
+  <div class="status-pill">
+    <div class="status-dot"></div>
+    Agent Online
+  </div>
+</div>
+
+<!-- Main Layout -->
+<div class="layout">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+
+    <!-- Upload Section -->
+    <div class="sidebar-section">
+      <div class="sidebar-label">Knowledge Base</div>
+      <div class="upload-zone" id="uploadZone">
+        <input type="file" id="fileInput" accept=".pdf,.docx" multiple />
+        <div class="upload-icon">📄</div>
+        <div class="upload-text">
+          <strong>Drop files here</strong>
+          PDF or DOCX · Multiple files
+        </div>
+      </div>
+      <button class="upload-btn" id="uploadBtn">⬆ Upload to Knowledge Base</button>
+      <div class="file-list" id="fileList"></div>
+    </div>
+
+    <!-- Tools Section -->
+    <div class="sidebar-section">
+      <div class="sidebar-label">Active Tools</div>
+      <div class="tool-chips">
+        <div class="tool-chip">
+          <div class="tool-chip-dot green"></div>
+          <span class="tool-chip-name">RAG Retriever</span>
+          <span class="tool-chip-tag">PINECONE</span>
+        </div>
+        <div class="tool-chip">
+          <div class="tool-chip-dot blue"></div>
+          <span class="tool-chip-name">Web Search</span>
+          <span class="tool-chip-tag">TAVILY</span>
+        </div>
+        <div class="tool-chip">
+          <div class="tool-chip-dot gold"></div>
+          <span class="tool-chip-name">Financials</span>
+          <span class="tool-chip-tag">POLYGON</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Chat -->
+  <div class="chat-area">
+    <div class="messages" id="messages">
+      <div class="welcome" id="welcome">
+        <div class="welcome-title">TradeMind AI</div>
+        <div class="welcome-sub">Your intelligent trading research assistant. Upload financial documents, ask about market trends, or query stock data.</div>
+        <div class="suggestion-grid">
+          <div class="suggestion-card" onclick="fillSuggestion(this)">
+            <div class="s-icon">📊</div>
+            <div class="s-title">Stock Financials</div>
+            <div class="s-desc">Get financial statements for AAPL</div>
+          </div>
+          <div class="suggestion-card" onclick="fillSuggestion(this)">
+            <div class="s-icon">🌐</div>
+            <div class="s-title">Market Trends</div>
+            <div class="s-desc">What are the latest trends in tech stocks?</div>
+          </div>
+          <div class="suggestion-card" onclick="fillSuggestion(this)">
+            <div class="s-icon">📄</div>
+            <div class="s-title">Document Analysis</div>
+            <div class="s-desc">Summarize the uploaded report</div>
+          </div>
+          <div class="suggestion-card" onclick="fillSuggestion(this)">
+            <div class="s-icon">📉</div>
+            <div class="s-title">Risk Assessment</div>
+            <div class="s-desc">What are the key risks mentioned?</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input -->
+    <div class="input-bar">
+      <div class="input-wrap">
+        <textarea id="chatInput" placeholder="Ask about stocks, markets, or your documents..." rows="1"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+      <div class="input-hint">Enter to send · Shift+Enter for new line</div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  const API_BASE = '';
+  let SESSION_ID = localStorage.getItem('trading_session_id');
+  if (!SESSION_ID) {
+    SESSION_ID = 'session_' + Date.now();
+    localStorage.setItem('trading_session_id', SESSION_ID);
+  }
+
+  // ── Auto-resize textarea ──
+  const textarea = document.getElementById('chatInput');
+  textarea.addEventListener('input', () => {
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.min(textarea.scrollHeight, 140) + 'px';
+  });
+
+  textarea.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  // ── File Upload ──
+  const fileInput = document.getElementById('fileInput');
+  const uploadBtn = document.getElementById('uploadBtn');
+  const uploadZone = document.getElementById('uploadZone');
+  const fileList = document.getElementById('fileList');
+  let selectedFiles = [];
+
+  fileInput.addEventListener('change', () => {
+    selectedFiles = Array.from(fileInput.files);
+    renderFileList();
+    uploadBtn.classList.toggle('visible', selectedFiles.length > 0);
+  });
+
+  uploadZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadZone.classList.add('drag-over');
+  });
+
+  uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+
+  uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadZone.classList.remove('drag-over');
+    selectedFiles = Array.from(e.dataTransfer.files).filter(f =>
+      f.name.endsWith('.pdf') || f.name.endsWith('.docx')
+    );
+    renderFileList();
+    uploadBtn.classList.toggle('visible', selectedFiles.length > 0);
+  });
+
+  function renderFileList() {
+    fileList.innerHTML = '';
+    selectedFiles.forEach(f => {
+      const ext = f.name.split('.').pop().toUpperCase();
+      const icon = ext === 'PDF' ? '📕' : '📘';
+      const item = document.createElement('div');
+      item.className = 'file-item';
+      item.dataset.name = f.name;
+      item.innerHTML = `
+        <span class="file-icon">${icon}</span>
+        <span class="file-name" title="${f.name}">${f.name}</span>
+        <span class="file-status" style="color:var(--text-muted)">READY</span>
+      `;
+      fileList.appendChild(item);
+    });
+  }
+
+  uploadBtn.addEventListener('click', async () => {
+    if (!selectedFiles.length) return;
+
+    const formData = new FormData();
+    selectedFiles.forEach(f => formData.append('files', f));
+
+    // Update statuses to uploading
+    fileList.querySelectorAll('.file-status').forEach(s => {
+      s.textContent = 'UPLOADING...';
+      s.className = 'file-status uploading';
+    });
+    uploadBtn.disabled = true;
+
+    try {
+      const res = await fetch(`${API_BASE}/upload`, { method: 'POST', body: formData });
+      const data = await res.json();
+
+      if (res.ok) {
+        fileList.querySelectorAll('.file-status').forEach(s => {
+          s.textContent = '✓ STORED';
+          s.className = 'file-status done';
+        });
+        showToast('✓ Files uploaded to knowledge base', 'success');
+      } else {
+        throw new Error(data.error || 'Upload failed');
+      }
+    } catch (err) {
+      fileList.querySelectorAll('.file-status').forEach(s => {
+        s.textContent = '✗ FAILED';
+        s.className = 'file-status error';
+      });
+      showToast('✗ ' + err.message, 'error');
+    } finally {
+      uploadBtn.disabled = false;
+    }
+  });
+
+  // ── Chat ──
+  let isLoading = false;
+
+  function hideWelcome() {
+    const welcome = document.getElementById('welcome');
+    if (welcome) welcome.remove();
+  }
+
+  function fillSuggestion(card) {
+    const desc = card.querySelector('.s-desc').textContent;
+    textarea.value = desc;
+    textarea.style.height = 'auto';
+    textarea.focus();
+  }
+
+  function addMessage(role, text) {
+    hideWelcome();
+    const messages = document.getElementById('messages');
+
+    const msg = document.createElement('div');
+    msg.className = `message ${role}`;
+
+    const avatarIcon = role === 'user' ? '👤' : '🤖';
+    const avatarClass = role === 'user' ? 'user-av' : 'ai-av';
+
+    msg.innerHTML = `
+      <div class="avatar ${avatarClass}">${avatarIcon}</div>
+      <div class="bubble">${formatText(text)}</div>
+    `;
+
+    messages.appendChild(msg);
+    messages.scrollTop = messages.scrollHeight;
+    return msg;
+  }
+
+  function addTyping() {
+    hideWelcome();
+    const messages = document.getElementById('messages');
+    const msg = document.createElement('div');
+    msg.className = 'message assistant';
+    msg.id = 'typing-indicator';
+    msg.innerHTML = `
+      <div class="avatar ai-av">🤖</div>
+      <div class="bubble">
+        <div class="typing">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    `;
+    messages.appendChild(msg);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function removeTyping() {
+    const t = document.getElementById('typing-indicator');
+    if (t) t.remove();
+  }
+
+  function formatText(text) {
+    if (!text) return '';
+
+    // Remove unnecessary escaping before Markdown characters
+    text = text.replace(/\\([#*_`-])/g, '$1');
+
+    // Escape HTML
+    text = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+    // Headings
+    text = text.replace(/^### (.*?)$/gm, '<h3>$1</h3>');
+    text = text.replace(/^## (.*?)$/gm, '<h2>$1</h2>');
+    text = text.replace(/^# (.*?)$/gm, '<h1>$1</h1>');
+
+    // Bold
+    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+    // Italic
+    text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+    // Inline code
+    text = text.replace(
+        /`(.*?)`/g,
+        '<code style="background:var(--surface);padding:2px 5px;border-radius:3px;font-size:12px">$1</code>'
+    );
+
+    // Bullet points
+    text = text.replace(/^[*-] (.*?)$/gm, '• $1');
+
+    // Numbered lists
+    text = text.replace(/^(\d+)\. (.*?)$/gm, '$1. $2');
+
+    // New lines
+    text = text.replace(/\n/g, '<br>');
+
+    return text;
+}
+
+  async function sendMessage() {
+    const input = textarea.value.trim();
+    if (!input || isLoading) return;
+
+    isLoading = true;
+    textarea.value = '';
+    textarea.style.height = 'auto';
+    document.getElementById('sendBtn').disabled = true;
+
+    addMessage('user', input);
+    addTyping();
+
+    try {
+      const res = await fetch(`${API_BASE}/query`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: input, thread_id: SESSION_ID })
+      });
+
+      const data = await res.json();
+      removeTyping();
+
+      if (res.ok) {
+        addMessage('assistant', data.answer);
+      } else {
+        addMessage('assistant', '⚠ ' + (data.error || 'Something went wrong.'));
+      }
+    } catch (err) {
+      removeTyping();
+      addMessage('assistant', '⚠ Could not reach the server. Make sure the API is running on port 8000.');
+    } finally {
+      isLoading = false;
+      document.getElementById('sendBtn').disabled = false;
+      textarea.focus();
+    }
+  }
+
+  // ── Toast ──
+  function showToast(msg, type = 'success') {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.className = `toast ${type} show`;
+    setTimeout(() => { toast.className = 'toast'; }, 3500);
+  }
+</script>
+</body>
+</html>

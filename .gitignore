@@ -1,0 +1,10 @@
+.env
+env
+logs
+Agentic_Trading_Chatbot.egg-info
+improvements.txt
+memory.db
+*.db
+.venv/
+__pycache__/
+memory.db-*

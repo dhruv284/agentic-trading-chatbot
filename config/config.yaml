@@ -1,0 +1,19 @@
+vector_db:
+  index_name: "trading-bot-free"
+
+retriever:
+  top_k: 3
+  score_threshold: 0.5
+
+embedding_model:
+  provider: "jina"
+  model_name: "jina-embeddings-v3"
+
+
+llm:
+  provider: "gemini"
+  model_name: "gemini-3.7-flash"
+     
+tools:
+  tavily:
+    max_results: 5

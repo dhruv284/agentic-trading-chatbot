@@ -1,0 +1,22 @@
+lancedb
+langchain
+langgraph
+tavily-python
+polygon
+setuptools
+python-dotenv
+langchain-community
+fastapi
+uvicorn
+langchain-pinecone
+langchain-tavily
+langchain-google-genai
+langchain-openai
+python-multipart
+jinja2
+docx2txt
+langgraph-checkpoint-sqlite
+ragas
+datasets
+
+-e .
